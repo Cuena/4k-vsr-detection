@@ -13,6 +13,10 @@ from scipy import stats
 from torch.nn.functional import softmax
 from torch.utils.data import DataLoader
 
+
+# Set up the root directory
+rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
+
 from src.utils import (
     RankedLogger,
     extras,
@@ -21,8 +25,6 @@ from src.utils import (
     task_wrapper,
 )
 
-# Set up the root directory
-rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 log = RankedLogger(__name__, rank_zero_only=True)
 
@@ -66,9 +68,11 @@ def remove_prefix(text: str, prefix: str) -> str:
     Returns:
         str: The string with the prefix removed if it existed, otherwise the original string.
     """
-    return text[len(prefix):] if text.startswith(prefix) else text
+    if prefix in text:
+        return text.replace(prefix, "")
+    return text
 
-def repair_checkpoint(path: str) -> Dict[str, Any]:
+def repair_checkpoint(path: str):
     """
     Repair a checkpoint by removing prefixes from state_dict keys.
 
@@ -78,18 +82,23 @@ def repair_checkpoint(path: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: The repaired checkpoint dictionary.
     """
-    ckpt = torch.load(path, map_location=torch.device('cpu'))
-    log.info("Repairing checkpoint")
-    
+    ckpt = torch.load(path)
+    log.info("Repairing checkpoint!")
+    log.info(ckpt["state_dict"].keys())
     in_state_dict = ckpt["state_dict"]
-    out_state_dict = {remove_prefix(k, "_orig_mod."): v for k, v in in_state_dict.items()}
-    
-    if in_state_dict.keys() == out_state_dict.keys():
-        log.info("No need to repair checkpoint")
-        return ckpt
-    
+    pairings = [
+        (src_key, remove_prefix(src_key, "_orig_mod."))
+        for src_key in in_state_dict.keys()
+    ]
+    if all(src_key == dest_key for src_key, dest_key in pairings):
+        log.info("No need to repair checkpoint!")
+        return ckpt  # Do not write checkpoint if no need to repair!
+    out_state_dict = {}
+    for src_key, dest_key in pairings:
+        log.info(f"{src_key}  ==>  {dest_key}")
+        out_state_dict[dest_key] = in_state_dict[src_key]
     ckpt["state_dict"] = out_state_dict
-    log.info("Checkpoint repaired")
+    log.info("Checkpoint repaired!")
     return ckpt
 
 @task_wrapper
@@ -160,8 +169,8 @@ def load_test_datasets(cfg: DictConfig) -> Dict[str, Dict[str, Any]]:
             video_dataset,
             batch_size=cfg.batch_size,
             shuffle=False,
-            num_workers=cfg.num_workers,
-            pin_memory=cfg.pin_memory
+            num_workers=0,
+            pin_memory=False
         )
         
         video_dataloader_dict[video] = {
@@ -216,7 +225,7 @@ def aggregate_metrics(results: Dict[str, Dict[str, List[int]]]) -> None:
         prediction_label = 'Original' if video_pred == 0 else 'Upscaled'
         log.info(f"Video: {video_name} - Prediction: {prediction_label} ({video_pred})")
 
-@hydra.main(version_base="1.3", config_path="../configs", config_name="eval_sr_convnext.yaml")
+@hydra.main(version_base="1.3", config_path="../configs", config_name="eval_sr_convnext_2.yaml")
 def main(cfg: DictConfig) -> None:
     """
     Main entry point for evaluation.
