@@ -1,0 +1,67 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - data: crops
+  - model: detector
+  - logger: null
+  - trainer: default
+  - paths: default
+  - extras: default
+  - hydra: default
+
+  - experiment: null
+
+task_name: "eval"
+
+tags: ["dev"]
+
+methods: ["4k", "001_RVRT_videosr_bi_REDS_30frames", "basicvsr_reds4", "bicubic", "linear", "nearest", "real-esrgan", "real_basicvsr", "swinir-classical", "swinir-real"]
+
+ckpt_path: checkpoints/resnet-18_staircase.ckpt 
+data:
+  methods: ${methods}
+model: 
+  _target_: src.models.detector_module.DetectorModule
+  methods: ${methods}
+  all_methods: ${methods}
+  compile: True
+  optimizer:
+    lr: 0.0005
+
+
+  feature_extractor:
+    _target_: src.models.components.staircase_feature_extractor.FeatureExtractorStaircase
+    model_path: checkpoints/resnet18-f37072fd.pth
+    freeze: False
+  
+  mlp:
+    in_features: 512
+    intermediate_features: 1024
+    methods: ${methods}
+
+
+patch_size: 240
+
+batch_size: 64
+
+seed: null
+
+test_dataset:
+  _target_: src.data.eval_dataset_auto.EvalDataset
+  patch_size: 240
+  top_k_patches: 96
+  patch_selection_criterion: "contrast"
+  folder_path: ???
+  use_dct: False
+  transform_eval:
+    _target_: albumentations.Compose
+    transforms:
+      - _target_: albumentations.pytorch.ToTensorV2
+
+
+train_sr_methods: ${methods}
+
+result_save_path: null
+
+test_dataset_path: null
