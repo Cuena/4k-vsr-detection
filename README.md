@@ -82,15 +82,15 @@ Ensure that your input data follows this structure for the evaluation script to 
 The models have been trained to detect several super-resolution models and techniques. The output labels correspond to the following list of upscaling methods:
 
 1. "4k" (native 4K)
-2. "001_RVRT_videosr_bi_REDS_30frames"
-3. "basicvsr_reds4"
-4. "bicubic"
-5. "linear"
-6. "nearest"
+2. "RVRT"
+3. "BasicVSR"
+4. "Bicubic interpolation"
+5. "Linear interpolation"
+6. "Nearest N."
 7. "real-esrgan"
-8. "real_basicvsr"
-9. "swinir-classical"
-10. "swinir-real"
+8. "Real BasicVSR"
+9. "SwinIR Classical"
+10. "SwinIR Real"
 
 When the model classifies a video, it will output a number from 1 to 10, corresponding to the index of the detected upscaling method in this list.
 
