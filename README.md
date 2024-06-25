@@ -11,6 +11,21 @@ This repository contains models and scripts for detecting upscaled videos at 4K 
 - Evaluation script with configurable parameters
 - Detection of multiple super-resolution models and techniques
 
+## Training Data
+
+The training dataset is composed of upscaled videos from [BVI-DVC](https://fan-aaron-zhang.github.io/BVI-DVC/). THe 200 videos have been upscaled with the following methods to train the SR recognition model (only deep learning-based methods are included for download):
+- "RVRT"
+- "BasicVSR"
+- "Bicubic interpolation"
+- "Linear interpolation"
+- "Nearest N."
+- "real-esrgan"
+- "Real BasicVSR"
+- "SwinIR Classical"
+- "SwinIR Real"
+
+To get access, fill the form at https://docs.hpai.cloud/apps/forms/s/tAjr9RLNKKzjSyssy6yMEmm7. You will get a link with temporary access to the compressed files.
+
 ## Requirements
 
 All required dependencies are listed in the `requirements.txt` file. You can install them using pip:
