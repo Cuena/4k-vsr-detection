@@ -109,7 +109,7 @@ THE UNIVERSITY OF TEXAS AT AUSTIN SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDI
   publisher={IEEE}
 }
 
-9) xd
+9) 
 10) CC BY NC ND 4.0
 11) 
 Copyright (c) 2014, University of Southern California
